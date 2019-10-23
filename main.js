@@ -58,19 +58,41 @@ class Watcher extends events.EventEmitter {
   }
 
   processarLinha(line){
-    if(line){
+    if(line && line != ""){
       var cells = line.split("ç");
-      switch(cells[0]){
-        case "001": //vendedor
-          this.processarVendedor(cells);
-        break;
-        case "002": //cliente
-          this.processarCliente(cells);
-        break;
-        case "003": //venda
-          this.processarVenda(cells);
-        break;
-      }
+      if(cells.length == 4)
+        if(this.registroValido(cells)){
+          switch(cells[0]){
+            case "001": //vendedor
+              this.processarVendedor(cells);
+            break;
+            case "002": //cliente
+              this.processarCliente(cells);
+            break;
+            case "003": //venda
+              this.processarVenda(cells);
+            break;
+            default:
+                console.log("Identificador inválido encontrado.");
+            break;
+          }
+        }
+      else 
+        console.log("Linha do arquivo no formato incorreto. Portanto não será processado.");
+    }
+    else 
+      console.log("Linha do arquivo em branco. Portanto não será processado.");
+    
+  }
+
+  registroValido(cells){
+    if(cells[0] && cells[1] && cells[2] && cells[3]
+      && cells[0] != "" && cells[1] != "" && cells[2] != "" && cells[3] != ""){
+      return true;
+    }
+    else {
+      console.log("Existem registros inválidos na linha do arquivo. Portanto não serão processados.");
+      return false;
     }
   }
 
