@@ -1,7 +1,7 @@
 # IWatcher
 ## What for?
-O IWatcher foi desenvolvido para realizar a varredura de arquivos de um diretório de leitura.
-Como resultado, será gerado um arquivo contendo os totalizadores esperados em um arquivo de output
+O IWatcher foi desenvolvido para realizar a varredura de arquivos de um diretório de leitura.  
+Como resultado, será gerado um arquivo contendo os totalizadores esperados em um arquivo de output.
 
 ## How to?
 1. Faça o download do repositório no github!;
@@ -28,7 +28,7 @@ Como resultado, será gerado um arquivo contendo os totalizadores esperados em u
 ```
 
 ## Enjoy!!
-Em caso de qualquer dúvida, entrar em contato através do e-mail eduardo_gindri@hotmail.com.
+Em caso de qualquer dúvida, entrar em contato através do e-mail eduardo_gindri@hotmail.com.  
 Obs.: Não nos responsabilizamos pelo desligamento de vendedores após uso do IWatcher.
 
 ## TO DO
