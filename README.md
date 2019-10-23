@@ -7,6 +7,8 @@ Como resultado, será gerado um arquivo contendo os totalizadores esperados em u
 1. Faça o download do repositório no github!;
 2. Dentro da pasta raiz do IWatcher, crie as pastas "data/in/" e "data/out/";
 3. Execute o IWatcher com o node executando o comando "node main.js" na pasta raiz do IWatcher;
+4. Adicione os arquivos de leitura na pasta "data/in";
+5. Veja o resultado no arquivo "result.json" na pasta "data/in";
 
 ## Condições de uso e validações
 1. Qualquer extensão de arquivo será válida;
