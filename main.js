@@ -1,8 +1,8 @@
 const 
-  events = require("events"),
-  fs = require("fs"),
-  dataIn = "./data/in",
-  dataOut = "./data/out/result.json";
+  events = require('events'),
+  fs = require('fs'),
+  dataIn = './data/in',
+  dataOut = './data/out/result.json';
   
 class Watcher extends events.EventEmitter {
   constructor(dataIn, dataOut) {
@@ -13,8 +13,8 @@ class Watcher extends events.EventEmitter {
       output: {
         numClientes: 0,
         numVendedores: 0,
-        idMaiorVenda: "",
-        piorVendedor: ""
+        idMaiorVenda: '',
+        piorVendedor: ''
       },
       vendedores: [],
       vendas: [],
@@ -22,81 +22,85 @@ class Watcher extends events.EventEmitter {
     }
   }
 
-  watch() {
+  watch() { //Chamado no momento que o watcher encontra alguma alteração no diretório de leitura
     const watcher = this;
-    fs.readdir(this.dataIn, function(err, files) {
+    fs.readdir(this.dataIn, function(err, files) { //Faz varredura no diretório
       if (err) throw err;
-      
-      if(files.length > 0){
-        console.log(files.length + " arquivo(s) adicionado(s)");
+      if(files.length > 0){ //Apenas faz processamento se existirem arquivos
+        console.log(`${files.length} arquivo(s) adicionado(s)`);
         for (let index in files) {
-          console.log("#Iniciando processamento do arquivo " + files[index]);
-          watcher.emit("process", files[index]); //chama evento que processa arquivo
+          console.log(`#Iniciando processamento do arquivo ${files[index]}`);
+          watcher.emit('process', files[index]); //chama evento que processa arquivo
         }
       }
     });
   }
 
   start() { //inicia o watcher
-    console.log("#IWatcher for Ilegra iniciado!");
+    console.log('#IWatcher for Ilegra iniciado!');
     var watcher = this;
-    fs.watchFile(dataIn, function() {
+    fs.watchFile(dataIn, function() { //Aguarda por alterações no diretório/arquivo selecionado (datasIn)
       watcher.watch();
     });
   }
 
-  processarArquivo(content){
+  processFile(content){ //Processa um arquivo
     if(content){
-      var lines = content.split("\r\n");
+      var lines = content.split('\r\n');
       lines.forEach(line => {
-        this.processarLinha(line);
+        this.processLine(line);
       });
     }
     else {
-      console.log("Foi encontrado um erro no arquivo. Dessa forma, o mesmo não será processado.");
+      console.log('Foi encontrado um erro no arquivo. Dessa forma, o mesmo não será processado.');
     }
   }
 
-  processarLinha(line){
-    if(line && line != ""){
-      var cells = line.split("ç");
+  processLine(line){ //Processa linha de um arquivo
+    if(line && line != ''){
+      var cells = line.split('ç');
       if(cells.length == 4)
-        if(this.registroValido(cells)){
+        if(this.validateCells(cells)){
           switch(cells[0]){
-            case "001": //vendedor
-              this.processarVendedor(cells);
+            case '001': //vendedor
+              this.processSalesman(cells);
             break;
-            case "002": //cliente
-              this.processarCliente(cells);
+            case '002': //cliente
+              this.processCustomer(cells);
             break;
-            case "003": //venda
-              this.processarVenda(cells);
+            case '003': //venda
+              this.processSale(cells);
             break;
             default:
-                console.log("Identificador inválido encontrado.");
+                console.log('Identificador inválido encontrado.');
             break;
           }
         }
       else 
-        console.log("Linha do arquivo no formato incorreto. Portanto não será processado.");
+        console.log('Linha do arquivo no formato incorreto. Portanto não será processado.');
     }
     else 
-      console.log("Linha do arquivo em branco. Portanto não será processado.");
+      console.log('Linha do arquivo em branco. Portanto não será processado.');
     
   }
 
-  registroValido(cells){
-    if(cells[0] && cells[1] && cells[2] && cells[3]
-      && cells[0] != "" && cells[1] != "" && cells[2] != "" && cells[3] != ""){
+  validateCells(cells){ //Valida a linha que está sendo processada em busca de inconsistências
+    if(this.containsEmptyCell(cells)){
       return true;
     }
     else {
-      console.log("Existem registros inválidos na linha do arquivo. Portanto não serão processados.");
+      console.log('Existem registros inválidos na linha do arquivo. Portanto não serão processados.');
       return false;
     }
   }
 
-  processarVendedor(cells){
+  containsEmptyCell(cells){ //Verifica se cada registro da linha é válido
+    if(cells[0] && cells[1] && cells[2] && cells[3] && cells[0] != '' && cells[1] != '' && cells[2] != '' && cells[3] != ''){
+      return true;
+    }
+  }
+
+  processSalesman(cells){ //Adiciona vendedor a memória e processa linha do vendedor
     if(cells.length == 4){
       var vendedor = {
         CPF: cells[1],
@@ -105,16 +109,16 @@ class Watcher extends events.EventEmitter {
       };
       var found = this.dados.vendedores.find(function(elem){ return elem.CPF == vendedor.CPF });
       if(!found){
-        console.log("Adicionando novo vendedor - " + vendedor.name + " (CPF: " + vendedor.CPF + ")");
+        console.log(`Adicionando novo vendedor - ${vendedor.name} (CPF: ${vendedor.CPF})`);
         this.dados.vendedores.push(vendedor);
       }
-      else {
-        console.log("Vendedor " + vendedor.name + " (CPF: " + vendedor.CPF + ") já existe e não será adicionado.");
+      else { //Se encontrou o vendedor em memória não adiciona novamente
+        console.log(`Vendedor ${vendedor.name} (CPF: ${vendedor.CPF}) já existe e não será adicionado.`);
       }
     }
   }
 
-  processarCliente(cells){
+  processCustomer(cells){ //Adiciona cliente a memória e processa linha do cliente
     if(cells.length == 4){
       var cliente = {
         CNPJ: cells[1],
@@ -123,16 +127,16 @@ class Watcher extends events.EventEmitter {
       }
       var found = this.dados.clientes.find(function(elem){ return elem.CNPJ == cliente.CNPJ });
       if(!found) {
-        console.log("Adicionando novo cliente - " + cliente.name + " (CNPJ: " + cliente.CNPJ + ")");
+        console.log(`Adicionando novo cliente - ${cliente.name} (CNPJ: ${cliente.CNPJ})`);
         this.dados.clientes.push(cliente);
       }
-      else {
-        console.log("Cliente " + cliente.name + " (CNPJ: " + cliente.CNPJ + ") já existe e não será adicionado.");
+      else { //Se encontrou o cliente em memória não adiciona novamente
+        console.log(`Cliente ${cliente.name} (CNPJ: ${cliente.CNPJ}) já existe e não será adicionado.`);
       }
     }
   }
 
-  processarVenda(cells){
+  processSale(cells){ //Adiciona venda com totalizador a memória e processa linha da venda
     if(cells.length == 4){
       var items = cells[2].substr(1, cells[2].length - 2).split(",");
       var venda = {
@@ -141,22 +145,22 @@ class Watcher extends events.EventEmitter {
         saleTotal: 0
       }
       venda.saleTotal = items.map(element => {
-        element = element.split("-");
+        element = element.split('-');
         return element[1] * element[2];
       }).reduce(function(a,b){return a+b});
 
       var found = this.dados.vendas.find(function(elem){ return elem.saleId == venda.saleId });
       if(!found){
-        console.log("Adicionando nova venda - ID: " + venda.saleId + " (Total: R$ " + venda.saleTotal + ")");
+        console.log(`Adicionando nova venda - ID: ${venda.saleId} (Total: R$ ${venda.saleTotal})`);
         this.dados.vendas.push(venda);
       }
-      else {
-        console.log("Venda ID: " + venda.saleId + " (Total: R$ " + venda.saleTotal + ") já existe e não será adicionada.");
+      else { //Se já encontrou a venda em memória não adiciona novamente
+        console.log(`Venda ID: ${venda.saleId} (Total: R$ ${venda.saleTotal}) já existe e não será adicionada.`);
       }
     }
   }
 
-  atualizarOutput(){
+  updateOutput(){ //Atualiza os dados que serão salvo no arquivo de output
     var nClientes = this.dados.clientes.length;
     var nVendedorees = this.dados.vendedores.length; 
     var mVenda = this.getTopSale(this.dados.vendas);
@@ -170,28 +174,28 @@ class Watcher extends events.EventEmitter {
     };
   }
 
-  salvarOutput(){
-    console.log("Atualizando dados do arquivo de output");
-    this.atualizarOutput();
+  saveOutput(){ //salva output
+    console.log('Atualizando dados do arquivo de output');
+    this.updateOutput(); //Atualiza variável que contém os dados que serão salvos no arquivo de output
     var outputPath = this.dataOut;
-    fs.writeFile(outputPath, JSON.stringify(this.dados.output), function(err) {
+    fs.writeFile(outputPath, JSON.stringify(this.dados.output), function(err) { //Faz rewrite no arquivo de output
       if(err) {
           return console.log(err);
       }
     }); 
-    console.log("Arquivo de output atualizado");
+    console.log('Arquivo de output atualizado');
   }
 
-  getTopSale(vendas){
+  getTopSale(vendas){ //Busca maior venda
     return vendas.reduce((max,p) => p.saleTotal > max ? p.saleTotal : max, vendas[0]).saleId
   }
 
-  getWorstSalesman(vendas){
-    var group = this.groupBy(vendas, "salesmanName");
-    return Object.keys(group).sort(function(a,b){return group[a]-group[b]})[0];
+  getWorstSalesman(vendas){ //Faz agrupamento das vendas por vendedor, depois pega a menor para saaber quem é o pior vendedor
+    var group = this.groupBy(vendas, 'salesmanName'); //Agrupamento
+    return Object.keys(group).sort(function(a,b){return group[a]-group[b]})[0]; //Sort pelo valor
   }
 
-  groupBy(array, prop) {
+  groupBy(array, prop) { //Faz group by dos vendedores com o valor vendido por cada
     return array.reduce(function(groups, item) {
       const val = item[prop];
       groups[val] = groups[val] || 0;
@@ -201,16 +205,16 @@ class Watcher extends events.EventEmitter {
   }
 }
  
-let watcher = new Watcher(dataIn, dataOut);
+let watcher = new Watcher(dataIn, dataOut); //Iniciar classe watcher
 
-watcher.on("process", function process(file) {
+watcher.on('process', function process(file) { //Evento de process chamado quando acontece uma alteração no diretório de leitura
   var self = this;
-  const watchFile = this.dataIn + "/" + file;
+  const watchFile = `${this.dataIn}/${file}`;
   fs.readFile(watchFile, 'utf8', function(err, content) {
-    self.processarArquivo(content);
-    self.salvarOutput();
+    self.processFile(content);
+    self.saveOutput();
     fs.unlinkSync(watchFile);
   });
 });
 
-watcher.start();
+watcher.start(); //Inicia watcher
